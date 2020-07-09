@@ -16,40 +16,37 @@ class HashTable:
     """
     A hash table that with `capacity` buckets
     that accepts string keys
-
     Implement this.
     """
 
     def __init__(self, capacity):
         # Your code here
-
+        self.capacity = capacity
+        self.storage = [None] *capacity
+        self.item_count = 0
 
     def get_num_slots(self):
         """
         Return the length of the list you're using to hold the hash
         table data. (Not the number of items stored in the hash table,
         but the number of slots in the main list.)
-
         One of the tests relies on this.
-
         Implement this.
         """
         # Your code here
-
+        return len(self.storage)
 
     def get_load_factor(self):
         """
         Return the load factor for this hash table.
-
         Implement this.
         """
         # Your code here
-
+        return self.item_count / self.capacity
 
     def fnv1(self, key):
         """
         FNV-1 Hash, 64-bit
-
         Implement this, and/or DJB2.
         """
 
@@ -59,11 +56,13 @@ class HashTable:
     def djb2(self, key):
         """
         DJB2 hash, 32-bit
-
         Implement this, and/or FNV-1.
         """
         # Your code here
-
+        hash = 5381
+        for x in key:
+            hash = ((hash << 5) + hash) + ord(x)
+        return hash & 0xFFFFFFFF
 
     def hash_index(self, key):
         """
@@ -76,45 +75,100 @@ class HashTable:
     def put(self, key, value):
         """
         Store the value with the given key.
-
         Hash collisions should be handled with Linked List Chaining.
-
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current = self.storage[index]
+
+        while current is not None and current.key != key:
+            current = current.next
+        if current is not None:
+            current.value = value
+        else:
+            new_current = HashTableEntry(key, value)
+            new_current.next = self.storage[index]
+            self.storage[index] = new_current
+
+            self.item_count += 1
+
+            if self.get_load_factor() > 0.2:
+                self.resize(self.capacity *2)
 
 
     def delete(self, key):
         """
         Remove the value stored with the given key.
-
         Print a warning if the key is not found.
-
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current = self.storage[index]
+        last_entry = None
+
+        while current is not None and current.key != key:
+            last_entry = current
+            current = last_entry.next
+
+        if current is None:
+            print(f"{key} is not present")
+
+        else:
+            if last_entry is None:
+                self.storage[index] = current.next
+            else:
+                last_entry.next = current.next
+            
+            self.item_count -= 1
+            if self.get_load_factor() < 0.2 and self.capacity > MIN_CAPACITY:
+                new_capacity = self.capacity
+                if new_capacity < MIN_CAPACITY
+                new_capacity = MIN_CAPACITY
+
 
 
     def get(self, key):
         """
         Retrieve the value stored with the given key.
-
         Returns None if the key is not found.
-
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+        current = self.storage[index]
+
+        while current is not None:
+            if current.key == key:
+                return current.value
+            current = current.next
+        return None
 
 
     def resize(self, new_capacity):
         """
         Changes the capacity of the hash table and
         rehashes all key/value pairs.
-
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current = self.storage[index]
+        old_storage = self.storage
 
+        old_item_count = self.item_count
+
+        current_entry = None
+
+        for item in old_storage:
+            current_entry = item
+            while current_entry is not None:
+                self.put(current_entry.key, current_entry.value)
+                current_entry = current_entry.next
+        self.item_count = old_item_count
+
+
+                
 
 
 if __name__ == "__main__":
